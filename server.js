@@ -15,21 +15,36 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// Health check endpoint
+app.get('/', (req, res) => {
+    res.status(200).json({ 
+        status: 'OK', 
+        message: 'WhatsApp Study Bot is running',
+        timestamp: new Date().toISOString()
+    });
+});
+
 // Webhook verification endpoint
 app.get('/webhook', (req, res) => {
+    console.log('Webhook GET request received:', req.query);
+    
     const mode = req.query['hub.mode'];
     const token = req.query['hub.verify_token'];
     const challenge = req.query['hub.challenge'];
+
+    console.log('Mode:', mode, 'Token:', token, 'Challenge:', challenge);
+    console.log('Expected token:', process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN);
 
     if (mode && token) {
         if (mode === 'subscribe' && token === process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN) {
             console.log('Webhook verified successfully');
             res.status(200).send(challenge);
         } else {
-            console.log('Webhook verification failed');
+            console.log('Webhook verification failed - token mismatch');
             res.status(403).send('Forbidden');
         }
     } else {
+        console.log('Webhook verification failed - missing parameters');
         res.status(400).send('Bad Request');
     }
 });
