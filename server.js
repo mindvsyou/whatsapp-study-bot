@@ -10,6 +10,15 @@ const questionService = require('./services/questionService');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Add error handling for uncaught exceptions
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (err) => {
+    console.error('Unhandled Rejection:', err);
+});
+
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
@@ -275,9 +284,10 @@ async function startServer() {
         await questionService.initializeDatabase();
         console.log('Database initialized successfully');
         
-        app.listen(PORT, () => {
+        app.listen(PORT, '0.0.0.0', () => {
             console.log(`WhatsApp Study Bot server is running on port ${PORT}`);
             console.log(`Webhook URL: http://localhost:${PORT}/webhook`);
+            console.log('Server is ready to receive requests');
         });
     } catch (error) {
         console.error('Failed to start server:', error);
