@@ -52,17 +52,21 @@ app.get('/webhook', (req, res) => {
 // Webhook endpoint for receiving messages
 app.post('/webhook', async (req, res) => {
     try {
+        console.log('POST /webhook received:', JSON.stringify(req.body, null, 2));
         const body = req.body;
         
         if (body.object === 'whatsapp_business_account') {
+            console.log('WhatsApp Business Account webhook received');
             body.entry.forEach(async (entry) => {
                 const webhookEvent = entry.changes[0];
                 const { value } = webhookEvent;
                 
                 if (value.messages) {
+                    console.log('Message received:', value.messages);
                     const message = value.messages[0];
                     const phoneNumber = message.from;
                     const messageText = message.text?.body || '';
+                    console.log('Processing message from:', phoneNumber, 'Text:', messageText);
                     
                     console.log(`Received message from ${phoneNumber}: ${messageText}`);
                     
