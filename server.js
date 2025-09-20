@@ -281,16 +281,35 @@ async function handleMenuSelection(conversation, message) {
 // Initialize database and start server
 async function startServer() {
     try {
+        console.log('Starting WhatsApp Study Bot...');
+        console.log('Environment variables check:');
+        console.log('- WHATSAPP_ACCESS_TOKEN:', process.env.WHATSAPP_ACCESS_TOKEN ? 'Set' : 'Missing');
+        console.log('- WHATSAPP_PHONE_NUMBER_ID:', process.env.WHATSAPP_PHONE_NUMBER_ID ? 'Set' : 'Missing');
+        console.log('- WHATSAPP_WEBHOOK_VERIFY_TOKEN:', process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN ? 'Set' : 'Missing');
+        console.log('- NODE_ENV:', process.env.NODE_ENV);
+        console.log('- PORT:', PORT);
+        
         await questionService.initializeDatabase();
         console.log('Database initialized successfully');
         
-        app.listen(PORT, '0.0.0.0', () => {
+        const server = app.listen(PORT, '0.0.0.0', () => {
             console.log(`WhatsApp Study Bot server is running on port ${PORT}`);
             console.log(`Webhook URL: http://localhost:${PORT}/webhook`);
             console.log('Server is ready to receive requests');
         });
+        
+        // Handle graceful shutdown
+        process.on('SIGTERM', () => {
+            console.log('SIGTERM received, shutting down gracefully');
+            server.close(() => {
+                console.log('Server closed');
+                process.exit(0);
+            });
+        });
+        
     } catch (error) {
         console.error('Failed to start server:', error);
+        console.error('Error details:', error.stack);
         process.exit(1);
     }
 }
